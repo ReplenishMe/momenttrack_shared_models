@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "momenttrack_shared_models"
+authors = [
+    {name = "Curiouspaul", email = "paulcurious7@gmail.com"},
+]
+version = "0.1.0"
+dependencies = [
+    'flask',
+    'flask-sqlalchemy',
+    'python-dotenv',
+    'flask-migrate',
+    'flask-login',
+    'passlib',
+    'sqlalchemy-filters',
+    'sqlalchemy-json',
+    'psycopg2',
+    'active_alchemy @ https://github.com/Curiouspaul1/active-alchemy'
+]
+description = "database models used across services in our backend suite"
+classifiers = [
+    # Project Maturity
+    'Development Status :: 3 - Alpha',
+
+    # Indicate who your project is intended for
+    'Intended Audience :: Developers',
+    'Topic :: Software Development :: Build Tools',
+
+    "Operating System :: OS Independent",
+
+    # License
+    'License :: OSI Approved :: MIT License',
+
+    # Python versions Support
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+]
+requires-python = '>=3'
+
+[tool.setuptools.packages.find]
+include = ["momenttrack_shared_models*"]
