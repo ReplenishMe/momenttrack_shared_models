@@ -12,7 +12,7 @@ dependencies = [
     'python-dotenv',
     'passlib',
     'sqlalchemy-filters',
-    'marshmllow-sqlalchemy',
+    'marshmallow-sqlalchemy',
     'sqlalchemy-json',
     'active_alchemy @ git+https://github.com/ReplenishMe/active_alchemy'
 ]
