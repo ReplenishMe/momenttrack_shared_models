@@ -2,12 +2,26 @@ import enum
 import random
 import uuid
 
-from flask import jsonify, make_response
+from flask import (
+    jsonify, make_response
+)
+
+
+class DataValidationError(Exception):
+    def __init__(self, message, errors, data=None):
+        super(DataValidationError, self).__init__(message, errors, data)
+        self.message = message
+        self.errors = errors
+        self.data = data
+
+    def __reduce__(self):
+        return (DataValidationError, (self.message, self.errors, self.data))
 
 
 class SerializableEnum(str, enum.Enum):
     """JSON Serializable enums for easy response generation.
-    Note: sub-classing str makes it serializable. see: https://stackoverflow.com/a/51976841/2528464
+    Note: sub-classing str makes it serializable.
+     see: https://stackoverflow.com/a/51976841/2528464
     """
 
     pass
@@ -35,7 +49,8 @@ class AppResponse:
 
     @staticmethod
     def success(
-        data=None, code=200, message=None, headers=None, status=None, pagination=None
+        data=None, code=200, message=None,
+        headers=None, status=None, pagination=None
     ):
         output = {
             "success": True,
@@ -49,7 +64,7 @@ class AppResponse:
 
     @staticmethod
     def error(message, code, headers=None, errors=None):
-        if type(message) == list:
+        if type(message) is list:
             message = message[0]
 
         output = {

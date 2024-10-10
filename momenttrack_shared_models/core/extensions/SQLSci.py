@@ -1,6 +1,3 @@
-from .. import settings
-
-from flask_sqlalchemy import SQLAlchemy
 from active_alchemy import ActiveAlchemy
 from sqlalchemy import create_engine, orm
 from sqlalchemy.orm import scoped_session

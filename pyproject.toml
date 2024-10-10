@@ -9,16 +9,12 @@ authors = [
 ]
 version = "0.1.0"
 dependencies = [
-    'flask',
-    'flask-sqlalchemy',
     'python-dotenv',
-    'flask-migrate',
-    'flask-login',
     'passlib',
     'sqlalchemy-filters',
+    'marshmllow-sqlalchemy',
     'sqlalchemy-json',
-    'psycopg2',
-    'active_alchemy @ https://github.com/Curiouspaul1/active-alchemy'
+    'active_alchemy @ git+https://github.com/ReplenishMe/active_alchemy'
 ]
 description = "database models used across services in our backend suite"
 classifiers = [

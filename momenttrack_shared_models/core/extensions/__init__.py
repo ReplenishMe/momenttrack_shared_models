@@ -1,11 +1,9 @@
-import os
 from passlib.context import CryptContext
 
 from .SQLSci import SQLSci
 from dotenv import load_dotenv
 
 from ..database.base_query import AppBaseQuery
-from ..settings import *
 
 from flask_migrate import Migrate
 
