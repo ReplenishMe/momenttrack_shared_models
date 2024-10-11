@@ -13,6 +13,7 @@ dependencies = [
     'passlib',
     'sqlalchemy-filters',
     'flask-sqlalchemy',
+    'flask_login',
     'flask-migrate',
     'marshmallow-sqlalchemy',
     'sqlalchemy-json',
