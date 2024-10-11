@@ -14,6 +14,7 @@ dependencies = [
     'sqlalchemy-filters',
     'flask-sqlalchemy',
     'flask_login',
+    'psycopg2-binary',
     'flask-migrate',
     'marshmallow-sqlalchemy',
     'sqlalchemy-json',
