@@ -12,6 +12,8 @@ dependencies = [
     'python-dotenv',
     'passlib',
     'sqlalchemy-filters',
+    'flask-sqlalchemy',
+    'flask-migrate',
     'marshmallow-sqlalchemy',
     'sqlalchemy-json',
     'active_alchemy @ git+https://github.com/ReplenishMe/active_alchemy'
