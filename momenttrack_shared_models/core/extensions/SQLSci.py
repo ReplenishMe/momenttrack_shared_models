@@ -15,13 +15,13 @@ from sqlalchemy.engine.url import make_url
 class SQLSci(ActiveAlchemy):
     uri: str
 
-    def add_sessions(obj, db_config):
+    def add_sessions(self, db_config, **kwargs):
         if 'SQLALCHEMY_BINDS' in db_config:
             for key, val in db_config['SQLALCHEMY_BINDS'].items():
-                engine = create_engine(make_url(val))
+                engine = create_engine(make_url(val), **kwargs)
                 _factory = orm.sessionmaker(bind=engine)
                 setattr(
-                    obj,
+                    self,
                     f'{key}_session',
                     scoped_session(_factory)
                 )
@@ -39,7 +39,7 @@ class SQLSci(ActiveAlchemy):
         _uri = db_config['SQLALCHEMY_DATABASE_URI']
         self.uri = _uri
         self.info = make_url(_uri)
-        SQLSci.add_sessions(self, db_config)
+        self.add_sessions(db_config, **kwargs)
         self.options = self._cleanup_options(**kwargs)
         self.session = self._create_scoped_session()
         return self
