@@ -39,7 +39,13 @@ class SQLSci(ActiveAlchemy):
         _uri = db_config['SQLALCHEMY_DATABASE_URI']
         self.uri = _uri
         self.info = make_url(_uri)
+        self.options['pool_size'] = kwargs.get('pool_size', None)
+        self.options['pool_use_lifo'] = True
+        self.options['pool_pre_ping'] = True
         self.add_sessions(db_config, **kwargs)
-        self.options = self._cleanup_options(**kwargs)
         self.session = self._create_scoped_session()
+        # # new engine with passed pool size
+        # self.engine.dispose()
+        # self.engine = self.connector.get_engine()
+        # print("new engine", self.engine.pool.size())
         return self
