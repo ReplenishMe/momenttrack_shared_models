@@ -48,6 +48,7 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     logo_url = db.Column(db.String())
     width = db.Column(db.Float())
     height = db.Column(db.Float())
+    lp_qty = db.Column(db.Integer(), nullable=False, default=0)
     depth = db.Column(db.Float())
     unit = db.Column("unit", db.Enum(UnitTypeEnum), comment="unit column data type")
     trigger = db.Column(
