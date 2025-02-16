@@ -1,6 +1,6 @@
 from ..model_mixins import BelongsToOrgMixin, IdMixin, TimestampMixin
 from ...extensions import db
-from ...utils import AppResponse, generate_token
+from ...utils import generate_token
 from ...utils import SerializableEnum
 
 
@@ -36,7 +36,8 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     # )
 
     beacon_id = db.Column(
-        db.String(11), default=lambda: generate_token(length=11, upper_case_only=True)
+        db.String(11),
+        default=lambda: generate_token(length=11, upper_case_only=True)
     )
     name = db.Column(db.String(63), nullable=False)
     parent_location_id = db.Column(db.Integer, db.ForeignKey("location.id"))
@@ -44,12 +45,18 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     organization_id = db.Column(
         db.Integer(), db.ForeignKey("organization.id"), nullable=False
     )
+    public_access = db.Column(db.Boolean(), nullable=False, default=False)
     active = db.Column(db.Boolean(), nullable=False, default=True)
+    lp_qty = db.Column(db.Integer(), nullable=False, default=0)
     logo_url = db.Column(db.String())
     width = db.Column(db.Float())
     height = db.Column(db.Float())
     depth = db.Column(db.Float())
-    unit = db.Column("unit", db.Enum(UnitTypeEnum), comment="unit column data type")
+    unit = db.Column(
+        "unit",
+        db.Enum(UnitTypeEnum),
+        comment="unit column data type"
+    )
     trigger = db.Column(
         mutable_json_type(
             dbtype=JSONB,
@@ -57,7 +64,12 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         )
     )
 
-    license_plates = db.relationship("LicensePlate", backref="location", lazy="dynamic")
+    license_plates = db.relationship(
+        "LicensePlate",
+        backref="location",
+        lazy="dynamic"
+    )
+    containers = db.relationship("Container", back_populates='location')
 
     @validates("beacon_id")
     def convert_upper(self, key, value):
@@ -103,8 +115,15 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     #         )
 
     @classmethod
-    def get_system_location(cls, org_id):
-        loc = cls.get_by_org(org_id).filter(cls.name == "SYSTEM_LOCATION").first()
+    def get_system_location(cls, org_id, session=None):
+        if session:
+            loc = cls.get_by_org(org_id, session=session).filter(
+                cls.name == "SYSTEM_LOCATION"
+            ).first()
+        else:
+            loc = cls.get_by_org(org_id).filter(
+                cls.name == "SYSTEM_LOCATION"
+            ).first()
         if not loc:
             db.writer_session.add(
                 cls(
@@ -115,5 +134,7 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
             )
             # print(vars(db.writer_session.bind))
             db.writer_session.commit()
-            loc = cls.get_by_org(org_id).filter(cls.name == "SYSTEM_LOCATION").first()
+            loc = cls.get_by_org(org_id).filter(
+                cls.name == "SYSTEM_LOCATION"
+            ).first()
         return loc

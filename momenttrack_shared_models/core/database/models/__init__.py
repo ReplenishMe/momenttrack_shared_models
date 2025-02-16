@@ -46,3 +46,7 @@ from .production_order_lineitem import (  # isort:skip
 )
 
 from .stackmodel import Stack
+from .container import (
+    Container,
+    ContainerMove
+)

@@ -1,9 +1,16 @@
-from ..model_mixins import IdMixin, TimestampMixin
+from ..model_mixins import (
+    IdMixin,
+    TimestampMixin,
+    BelongsToOrgMixin
+)
 from ..models import Role, User
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_json import mutable_json_type
 from ...extensions import db
-from ...utils import generate_token
+from ...utils import (
+    generate_token,
+    SerializableEnum
+)
 
 
 class Organization(db.BaseModel, IdMixin, TimestampMixin):
@@ -49,3 +56,29 @@ class Organization(db.BaseModel, IdMixin, TimestampMixin):
         return self.roles.filter(
             Role.name == "admin", Role.role_type == Role.BUILTIN_GROUP
         ).first()
+
+
+class VirtualERPTransactionStatus(SerializableEnum):
+    RECEIVED = "RECEIVED"
+    PAIRED = "PAIRED"
+
+
+class VirtualERP(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
+    color_code = db.Column(db.String())
+    item_id = db.Column(db.String())
+    item_num = db.Column(db.String())
+    item_sales_id = db.Column(db.String())
+    job_name = db.Column(db.String())
+    masking_batch = db.Column(db.String(127))
+    masking_qr = db.Column(db.String(63))
+    pur_batch = db.Column(db.String(127))
+    pur_qr = db.Column(db.String(63))
+    pvc_batch = db.Column(db.String(127))
+    pvc_qr = db.Column(db.String(63))
+    sales_order = db.Column(db.String(127))
+    transaction_status = db.Column(
+        db.Enum(VirtualERPTransactionStatus),
+        default=VirtualERPTransactionStatus.RECEIVED
+    )
+    license_plate_id = db.Column(db.Integer, db.ForeignKey('license_plate.id'))
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'))

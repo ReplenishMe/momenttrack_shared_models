@@ -21,7 +21,7 @@ conf = {
 }
 
 # print(dir(db.init_db(conf)))
-db.init_db(conf)
+# db.init_db(conf, pool_size=20)
 # from pprint import pprint as pp
 # pp(vars(LicensePlate))
 
@@ -39,7 +39,8 @@ db.init_db(conf)
 # db.writer_session.add(activity)
 # db.writer_session.commit()
 # print(vars(Activity.get(activity.id)))
-
+# db.writer_session.rollback()
+# db.writer_session.close()
 # schema = LicensePlateSchema()
 # lp = LicensePlate.get(1)
 # print(schema.dump(lp))

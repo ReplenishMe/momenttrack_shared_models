@@ -18,17 +18,32 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     # )
 
     lp_id = db.Column(
-        db.String(63), nullable=False, unique=True, default=lambda: generate_token(25)
+        db.String(63),
+        nullable=False,
+        unique=True,
+        default=lambda: generate_token(25)
     )
-    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey("product.id"),
+        nullable=False
+    )
     quantity = db.Column(db.Float(), nullable=False)
     # remaining_qty = db.Column(db.Float())
     organization_id = db.Column(
-        db.Integer(), db.ForeignKey("organization.id"), nullable=False
+        db.Integer(),
+        db.ForeignKey("organization.id"),
+        nullable=False
     )
-    location_id = db.Column(db.Integer, db.ForeignKey("location.id"), nullable=False)
+    location_id = db.Column(
+        db.Integer,
+        db.ForeignKey("location.id"),
+        nullable=False
+    )
     parent_license_plate_id = db.Column(
-        db.Integer, db.ForeignKey("license_plate.id"), nullable=True
+        db.Integer,
+        db.ForeignKey("license_plate.id"),
+        nullable=True
     )
     external_serial_number = db.Column(db.String(127))
     # @TODO Make it non-nullable
@@ -41,11 +56,18 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         nullable=False,
         default=LicensePlateStatusEnum.CREATED,
     )
+    container_id = db.Column(
+        db.Integer,
+        db.ForeignKey('container.id'),
+        index=True
+    )
 
     @classmethod
     def get_by_lp_id_and_org(cls, lp_id, org, fetch_all=False, session=None):
         if session:
-            lp = cls.get_by_org(org, session=session).filter(cls.lp_id == lp_id)
+            lp = cls.get_by_org(org, session=session).filter(
+                cls.lp_id == lp_id
+            )
         else:
             lp = cls.get_by_org(org).filter(cls.lp_id == lp_id)
         if fetch_all:
@@ -62,7 +84,7 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     @classmethod
     def get_by_id(cls, id, fetch_all=False, session=None):
         if session:
-            lp=cls.query.with_session(session).filter(cls.id == id)
+            lp = cls.query.with_session(session).filter(cls.id == id)
         else:
             lp = query = cls.query.filter(cls.id == id)
         if fetch_all:
@@ -75,6 +97,17 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     ):
         lp = cls.get_by_org(org).filter(
             cls.external_serial_number == external_serial_number
+        )
+        if fetch_all:
+            return lp.all()
+        return lp.first()
+
+    @classmethod
+    def get_by_external_serial_number_contains_and_org(
+        cls, external_serial_number, org, fetch_all=False
+    ):
+        lp = cls.get_by_org(org).filter(
+            cls.external_serial_number.contains(external_serial_number)
         )
         if fetch_all:
             return lp.all()

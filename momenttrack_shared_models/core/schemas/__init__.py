@@ -12,3 +12,4 @@ from .production_order_schema import *
 from .product_schema import *
 from .user_schema import *
 from .shared_schema import *
+from .container_schema import *

@@ -438,6 +438,11 @@ class LicensePlateProtoDumpSchema(BaseMASchema):
     person_ID = ma.String()
     license_plate = ma.String()
 
+
+class LicensePlateWrapSchema(BaseMASchema):
+    location_id = LpMoveField(allowed_len=11, required=True)
+    user_id = LpMoveField(allowed_len=17, required=False)
+
 # class LicensePlateMadeManyRequestSchema(BaseMASchema):
 #     lp_ids = ma.String(required=True, many=True)
 #     product_id = ma.Integer(required=True)
