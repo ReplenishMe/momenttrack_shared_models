@@ -41,6 +41,17 @@ class Container(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     parent_container_id = db.Column(db.Integer)
     location = db.relationship("Location")
 
+    @classmethod
+    def get_by_id_or_by_container_id(cls, obj_id, org_id, session=None):
+        uow = session if session else db.writer_session()
+        if isinstance(obj_id, str):
+            obj = uow.query(cls).filter_by(
+                container_id=obj_id
+            ).first()
+        else:
+            obj = uow.query(cls).get(obj_id)
+        return obj
+
 
 class ContainerMove(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     container_id = db.Column(
