@@ -20,6 +20,8 @@ from momenttrack_shared_models.core.database.models import (
 )
 from momenttrack_shared_models.core.extensions import db
 from momenttrack_shared_models.core.utils import DataValidationError
+from momenttrack_shared_models.core.database.models.license_plate \
+     import LicensePlateStatusEnum
 
 
 class InvalidLengthError(Exception):
@@ -442,6 +444,33 @@ class LicensePlateProtoDumpSchema(BaseMASchema):
 class LicensePlateWrapSchema(BaseMASchema):
     location_id = LpMoveField(allowed_len=11, required=True)
     user_id = LpMoveField(allowed_len=17, required=False)
+
+
+class LicensePlateRequestCycleCountSchema(BaseMASchema):
+    license_plate_id = LpMoveField(allowed_len=25, required=True)
+
+    @post_load
+    def add_required_alt(self, data, *args, **kwargs):
+        if data:
+            if isinstance(data["license_plate_id"], str):
+                tmp = (
+                    LicensePlate.query.filter(
+                        LicensePlate.lp_id == data["license_plate_id"]
+                    ).first()
+                )
+            else:
+                tmp = LicensePlate.query.get(data["license_plate_id"])
+            stale = [
+                LicensePlateStatusEnum.RETIRED,
+                LicensePlateStatusEnum.DELETED
+            ]
+            if not tmp or tmp.status in stale:
+                raise DataValidationError(
+                    "LicensePlate not found or no longer active",
+                    MSG.LICENSE_PLATE_NOT_FOUND
+                )
+            data["license_plate_id"] = tmp.id
+        return data
 
 # class LicensePlateMadeManyRequestSchema(BaseMASchema):
 #     lp_ids = ma.String(required=True, many=True)
