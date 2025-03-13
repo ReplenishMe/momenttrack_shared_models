@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from momenttrack_shared_models import LicensePlate, Activity, ActivityTypeEnum
+from momenttrack_shared_models import LicensePlate, Activity, ActivityTypeEnum, Container
 from momenttrack_shared_models.core.extensions import db
 from momenttrack_shared_models.core.schemas import LicensePlateSchema
 

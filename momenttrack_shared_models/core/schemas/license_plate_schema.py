@@ -144,7 +144,7 @@ class LicensePlateSchema(BaseSQLAlchemyAutoSchema):
     id = ma.Int(dump_only=True)
     created_at = ma.String(dump_only=True)  # read-only
     organization_id = ma.Integer(dump_only=True, required=False)  # read-only
-    location_id = ma.Integer(required=False)  # optional field
+    location_id = ma.Integer(required=False, dump_only=True)  # optional field
     product = fields.Nested("ProductSchema", only=("part_number",))
 
     class Meta:
