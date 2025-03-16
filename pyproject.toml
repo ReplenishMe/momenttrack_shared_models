@@ -16,7 +16,7 @@ dependencies = [
     'flask_login',
     'psycopg2-binary',
     'flask-migrate',
-    'marshmallow-sqlalchemy',
+    'marshmallow-sqlalchemy==1.1.0',
     'sqlalchemy-json',
     'active_alchemy @ git+https://github.com/ReplenishMe/active_alchemy'
 ]

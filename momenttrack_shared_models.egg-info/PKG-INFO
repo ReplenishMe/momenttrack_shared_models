@@ -1,0 +1,25 @@
+Metadata-Version: 2.2
+Name: momenttrack_shared_models
+Version: 0.1.0
+Summary: database models used across services in our backend suite
+Author-email: Curiouspaul <paulcurious7@gmail.com>
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3
+Requires-Dist: python-dotenv
+Requires-Dist: passlib
+Requires-Dist: sqlalchemy-filters
+Requires-Dist: flask-sqlalchemy
+Requires-Dist: flask_login
+Requires-Dist: psycopg2-binary
+Requires-Dist: flask-migrate
+Requires-Dist: marshmallow-sqlalchemy==1.1.0
+Requires-Dist: sqlalchemy-json
+Requires-Dist: active_alchemy@ git+https://github.com/ReplenishMe/active_alchemy

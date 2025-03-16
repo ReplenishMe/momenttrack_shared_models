@@ -7,6 +7,7 @@ from momenttrack_shared_models.core.extensions import db
 from momenttrack_shared_models.core.schemas import LicensePlateSchema
 
 
+
 load_dotenv()
 
 
@@ -19,12 +20,15 @@ conf = {
         "cache_refresher": DATABASE_URL_REFRESHER
     }
 }
+schema = LicensePlateSchema(unknown='exclude')
+obj = {'production_order_id': 1034, 'quantity': 1, 'product_id': 1, 'lp_id': 'qf6a5wwdoefwadd1c149d1009'}
+
 
 # print(dir(db.init_db(conf)))
-# db.init_db(conf, pool_size=20)
+db.init_db(conf, pool_size=20)
 # from pprint import pprint as pp
 # pp(vars(LicensePlate))
-
+print(schema.load(obj, session=db.writer_session()))
 # activity = Activity(
 #     model_name="license_plate",
 #     model_id=5918,
