@@ -53,7 +53,7 @@ class BaseSQLAlchemyAutoSchema(ma.SQLAlchemyAutoSchema):
         )
 
     @pre_load
-    def remove_skip_values(self, data, many, partial):
+    def remove_skip_values(self, data, **kwargs):
         """Treat nulls & empty strings are undefined
 
         As per these guidelines:
@@ -68,7 +68,7 @@ class BaseSQLAlchemyAutoSchema(ma.SQLAlchemyAutoSchema):
         }
 
     @pre_load
-    def emails_should_be_lower_case(self, data, many, partial):
+    def emails_should_be_lower_case(self, data, **kwargs):
         """Convert all `email` fields to lower case"""
         if data and "email" in data:
             data["email"] = data["email"].lower()
