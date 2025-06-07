@@ -91,6 +91,7 @@ class LicensePlateMoveLogsSchema(BaseSQLAlchemyAutoSchema):
             return obj
         except AttributeError:
             print("ERROR PARSING this object", obj, dir(obj))
+            print(obj.id, obj.created_at, type(obj.created_at))
 
     @post_dump
     def data_check(self, data, **kwargs):
