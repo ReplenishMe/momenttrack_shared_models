@@ -77,21 +77,23 @@ class LicensePlateMoveLogsSchema(BaseSQLAlchemyAutoSchema):
             "trx_id",
         )
         model = LicensePlateMove
-        sqla_session = db.session
         load_instance = True
         include_relationships = True
         include_fk = True
 
     @pre_dump
-    def normalize_date(self, obj, *args, **kwargs):
-        if obj:
-            obj.created_at = obj.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
-            if obj.left_at:
-                obj.left_at = obj.left_at.strftime("%Y-%m-%d %H:%M:%S.%f")
-        return obj
+    def normalize_date(self, obj, **kwargs):
+        try:
+            if obj:
+                obj.created_at = obj.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+                if obj.left_at:
+                    obj.left_at = obj.left_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+            return obj
+        except AttributeError:
+            print("ERROR PARSING this object", obj, dir(obj))
 
     @post_dump
-    def data_check(self, data, *, session=None, **kwargs):
+    def data_check(self, data, **kwargs):
         if "lp_id" not in data["license_plate"]:
             data["license_plate"] = LicensePlateSchema().dump(
                 LicensePlate.get_by_id_and_org(
