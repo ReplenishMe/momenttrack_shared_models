@@ -87,14 +87,14 @@ class LicensePlateMoveLogsSchema(BaseSQLAlchemyAutoSchema):
         try:
             if obj:
                 if isinstance(obj.created_at, str):
-                    obj.created_at = datetime.strptime(obj.created_at)
+                    obj.created_at = datetime.strptime(obj.created_at, "%Y-%m-%d %H:%M:%S.%f")
                 if isinstance(obj.created_at, datetime):
                     obj.created_at = obj.created_at.strftime(
                         "%Y-%m-%d %H:%M:%S.%f"
                     )
                 if obj.left_at:
                     if isinstance(obj.left_at, str):
-                        obj.left_at = datetime.strptime(obj.left_at)
+                        obj.left_at = datetime.strptime(obj.left_at, "%Y-%m-%d %H:%M:%S.%f")
                     if isinstance(obj.left_at, datetime):
                         obj.left_at = obj.left_at.strftime(
                             "%Y-%m-%d %H:%M:%S.%f"
