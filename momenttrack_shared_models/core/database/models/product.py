@@ -60,3 +60,19 @@ class Product(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
             .filter(cls.preferred_vendor_id == preferred_vendor_id)
             .first()
         )
+
+    @classmethod
+    def get_system_product(cls, org_id):
+        product = cls.get_by_org(org_id).filter(
+            cls.name == 'SYSTEM',
+            cls.part_number == 'SYSTEM_PART'
+        ).first()
+        if not product:
+            product = cls(
+                name='SYSTEM',
+                part_number='SYSTEM_PART',
+                organization_id=org_id
+            )
+            db.writer_session.add(product)
+            db.writer_session.commit()
+        return product

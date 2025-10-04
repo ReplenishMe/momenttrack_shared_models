@@ -4,6 +4,7 @@ from ..model_mixins import (
 )
 from ...extensions import db
 from ...utils import generate_uuid
+from .product import Product
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_json import mutable_json_type
 from ...utils import SerializableEnum
@@ -84,6 +85,24 @@ class ProductionOrder(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         for perm in remove:
             if self.has_perm(perm):
                 self.public_view_permissions -= perm
+
+    @classmethod
+    def get_system_order(cls, org, user_id):
+        system_product = Product.get_system_product(org)
+        order = cls.get_by_org(org).filter(
+            cls.requested_qty == '+infinity',
+            cls.product_id == system_product.id
+        ).first()
+        if not order:
+            order = cls(
+                organization_id=org,
+                product_id=system_product.id,
+                requested_qty='+infinity',
+                user_id=user_id
+            )
+            db.writer_session.add(order)
+            db.writer_session.commit()
+        return order
 
     def has_perm(self, perm):
         return self.public_view_permissions & perm == perm
