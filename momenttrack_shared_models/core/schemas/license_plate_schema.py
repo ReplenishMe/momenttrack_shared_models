@@ -4,8 +4,11 @@ from marshmallow import (
     fields,
     post_load,
     INCLUDE,
-    pre_load
+    pre_load,
+    pre_dump,
+    post_dump
 )
+from sqlalchemy import select, desc, and_
 from marshmallow.validate import Length, Range
 from momenttrack_shared_models.core import messages as MSG
 from momenttrack_shared_models.core.schemas._base import (
@@ -13,6 +16,7 @@ from momenttrack_shared_models.core.schemas._base import (
 )
 from momenttrack_shared_models.core.database.models import (
     LicensePlate,
+    Activity,
     Location,
     ProductionOrder,
     User,
@@ -471,6 +475,93 @@ class LicensePlateRequestCycleCountSchema(BaseMASchema):
                 )
             data["license_plate_id"] = tmp.id
         return data
+
+
+class LicensePlateStackReportSchema(BaseSQLAlchemyAutoSchema):
+    def __init__(self, *args, dev=False, **kwargs):
+        self._dev = dev
+        super().__init__(*args, **kwargs)
+
+    lp_id = fields.String(dump_only=True)
+    location_id = fields.Int(dump_only=True)
+    updated_at = fields.DateTime(dump_only=True)
+
+    class Meta:
+        model = LicensePlate
+        additional = ('location',)
+        exclude = (
+            'is_consumer_facing', 'id',
+            'quantity', 'redirect_url', 'status',
+            'external_serial_number',
+        )
+
+    @pre_dump
+    def add_location(self, obj, *args, dev=False, **kwargs):
+        setattr(
+            obj, 'location',
+            obj.location
+        )
+        return obj
+
+    @post_dump
+    def add_fields(self, data, *args, **kwargs):
+        pref = 'dev.3hd.us/' if self._dev else '3hd.us/'
+        data['license_plate'] = f"{pref}{data['lp_id']}"
+        data['current_location'] = {
+            'location_qr': f"{pref}{data['location'].beacon_id}",
+            'location_name': data['location'].name
+        }
+        timestamp = (
+            data['updated_at'] if data['updated_at'] is not None
+            else data['created_at']
+        )
+        data['timestamp'] = timestamp
+
+        data.pop('location')
+        data.pop('updated_at')
+        return data
+
+
+class LicensePlateReportSchema(BaseSQLAlchemyAutoSchema):
+    class Meta:
+        model = LicensePlate
+        fields = (
+            'id', 'organization_id',
+            'quantity', 'external_serial_number',
+            'lp_id', 'status', 'product_id', 'location',
+            'intake_date', 'beacon_id', 'location_name',
+            'part_number', 'description', 'location_width',
+            'location_height', 'location_depth', 'who_moved_last',
+            'category', 'production_order_id', 'when_last_movement',
+            'last_interaction', 'organization_id'
+        )
+        include_fk = True
+        include_relationships = True
+
+    intake_date = fields.DateTime(attribute='created_at')
+    beacon_id = fields.String(attribute='location.beacon_id')
+    location_name = fields.String(attribute='location.name')
+    part_number = fields.String(attribute='product.part_number')
+    description = fields.String(attribute='product.description')
+    location_width = fields.Float(attribute='location.width')
+    location_depth = fields.Float(attribute='location.depth')
+    location_height = fields.Float(attribute='location.height')
+    who_moved_last = fields.String(dump_default='')
+    category = fields.String(dump_default='')
+    production_order_id = fields.String(dump_default='')
+    when_last_movement = fields.DateTime(dump_default=None)
+    last_interaction = fields.Method(serialize='get_last_interaction')
+
+    def get_last_interaction(self, obj):
+        query = select(Activity).where(
+            and_(
+                Activity.model_id == obj.id,
+                Activity.model_name == 'license_plate'
+            )
+        ).order_by(desc(Activity.created_at))
+        activity = db.session.scalars(query).first()
+        return activity.created_at
+
 
 # class LicensePlateMadeManyRequestSchema(BaseMASchema):
 #     lp_ids = ma.String(required=True, many=True)

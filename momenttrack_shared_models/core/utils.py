@@ -1,10 +1,13 @@
+import os
 import enum
 import random
 import uuid
 
+
 from flask import (
     jsonify, make_response
 )
+from opensearchpy import OpenSearch, RequestsHttpConnection
 
 
 class DataValidationError(Exception):
@@ -79,3 +82,23 @@ class AppResponse:
 
 def generate_uuid():
     return uuid.uuid4().hex
+
+
+def setup_opensearch():
+    user = os.getenv('OPENSEARCH_USER')
+    passphrase = os.getenv('OPENSEARCH_PASS')
+    if not user or not passphrase:
+        return
+    auth_h = (
+        os.getenv("OPENSEARCH_USER"),
+        os.getenv("OPENSEARCH_PASS")
+    )
+    client = OpenSearch(
+        hosts=[{"host": os.getenv("OPENSEARCH_HOST"), "port": 443}],
+        use_ssl=True,
+        verify_certs=True,
+        connection_class=RequestsHttpConnection,
+        http_auth=auth_h,
+        timeout=300,
+    )
+    return client
