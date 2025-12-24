@@ -560,6 +560,9 @@ class LicensePlateReportSchema(BaseSQLAlchemyAutoSchema):
             )
         ).order_by(desc(Activity.created_at))
         activity = db.session.scalars(query).first()
+        if not activity:
+            print(f"LPReportSchema: no activity found for lp_id {obj['id']}")
+            return
         return activity.created_at
 
 
