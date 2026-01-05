@@ -21,3 +21,4 @@ class EverythingReport(db.Model, IdMixin, BelongsToOrgMixin):
     when_last_movement = db.Column(db.DateTime)
     last_interaction = db.Column(db.DateTime)
     production_order_id = db.Column(db.String(63))
+    organization_id = db.Column(db.Integer(), index=True)
