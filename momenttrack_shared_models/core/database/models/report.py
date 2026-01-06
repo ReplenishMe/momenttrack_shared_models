@@ -2,7 +2,7 @@ from ..model_mixins import BelongsToOrgMixin, IdMixin
 from ...extensions import db
 
 
-class EverythingReport(db.Model, IdMixin, BelongsToOrgMixin):
+class EverythingReport(db.BaseModel, IdMixin, BelongsToOrgMixin):
     quantity = db.Column(db.Integer)
     external_serial_number = db.Column(db.String(127))
     lp_id = db.Column(db.String(63), nullable=False, unique=True, index=True)
