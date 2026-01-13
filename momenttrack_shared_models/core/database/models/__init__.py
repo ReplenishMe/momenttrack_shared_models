@@ -50,4 +50,4 @@ from .container import (
     Container,
     ContainerMove
 )
-from .report import EverythingReport
+from .report import EverythingReport, LineItemTotals

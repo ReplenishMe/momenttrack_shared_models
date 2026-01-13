@@ -13,3 +13,4 @@ from .product_schema import *
 from .user_schema import *
 from .shared_schema import *
 from .container_schema import *
+from .report_schema import *

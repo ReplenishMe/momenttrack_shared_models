@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from ..model_mixins import BelongsToOrgMixin, IdMixin, TimestampMixin
 from ...extensions import db
 from ...utils import SerializableEnum
@@ -36,3 +38,11 @@ class ProductionOrderLineitem(db.BaseModel, IdMixin, TimestampMixin, BelongsToOr
     )
 
     # product = db.relationship("Product", backref="production_order_lineitem", lazy="joined")
+
+    @classmethod
+    def get_by_license_plate_id(cls, license_plate_id):
+        stmt = select(cls).where(
+            cls.license_plate_id == license_plate_id
+        )
+        res = db.session.scalars(stmt).all()
+        return res

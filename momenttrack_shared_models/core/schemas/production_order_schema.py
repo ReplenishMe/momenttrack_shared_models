@@ -1,11 +1,17 @@
 import marshmallow.fields as ma
 
-from momenttrack_shared_models.core.schemas._base import BaseMASchema, BaseSQLAlchemyAutoSchema
+from momenttrack_shared_models.core.schemas._base import (
+    BaseMASchema, BaseSQLAlchemyAutoSchema
+)
 from momenttrack_shared_models.core.schemas.location_schema import LocationSchema
 from momenttrack_shared_models.core.schemas.production_order_lineitem_schema import (
     ProductionOrderLineitemSchema,
 )
-from momenttrack_shared_models.core.database.models import ProductionOrder
+from momenttrack_shared_models.core.schemas.report_schema import \
+    LineItemTotalSchema
+from momenttrack_shared_models.core.database.models import (
+    ProductionOrder, LineItemTotals
+)
 from momenttrack_shared_models.core.extensions import db
 from marshmallow import fields
 
@@ -146,3 +152,28 @@ class ProductionOrderPublicViewPermUpdate(BaseMASchema):
 
     add = ma.List(fields.Integer(validate=verify_weight))
     remove = ma.List(fields.Integer(validate=verify_weight))
+
+
+class ProductionOrderReportStatusSchema(BaseSQLAlchemyAutoSchema):
+    """output schema for ProductionOrderStatusReportSchema"""
+    class Meta:
+        model = ProductionOrder
+        fields = (
+            'id', 'created_at', 'docid', 'product',
+            'order_template', 'organization_id', 'requested_qty',
+            'user', 'lineitem_totals', 'status'
+        )
+        include_fk = True
+        include_relationships = True
+
+    lineitem_totals = fields.Method(serialize='get_totals')
+    product = fields.Nested('ProductSchema', only=(
+        'id', 'part_number', 'description'
+    ))
+    user = fields.Nested('UserSchema', only=(
+        'first_name', 'last_name', 'person_id'
+    ))
+
+    def get_totals(self, obj):
+        totals = LineItemTotals.get_by_order(obj.id)
+        return LineItemTotalSchema(many=True).dump(totals)
