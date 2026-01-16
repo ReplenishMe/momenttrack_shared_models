@@ -566,6 +566,16 @@ class LicensePlateReportSchema(BaseSQLAlchemyAutoSchema):
         return activity.created_at
 
 
+class LicensePlateOrderReportSchema(BaseSQLAlchemyAutoSchema):
+    location = fields.Nested(
+        "LocationSchema", only=("name", "beacon_id")
+    )
+
+    class Meta:
+        model = LicensePlate
+        include_relationships = True
+        fields = ('location', 'lp_id', 'external_serial_number')
+
 # class LicensePlateMadeManyRequestSchema(BaseMASchema):
 #     lp_ids = ma.String(required=True, many=True)
 #     product_id = ma.Integer(required=True)
