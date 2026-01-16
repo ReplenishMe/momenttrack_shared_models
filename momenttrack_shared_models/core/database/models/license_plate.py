@@ -61,6 +61,9 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         db.ForeignKey('container.id'),
         index=True
     )
+    lineitems = db.relationship(
+        'ProductionOrderLineitem', backref='license_plate'
+    )
 
     @classmethod
     def get_by_lp_id_and_org(cls, lp_id, org, fetch_all=False, session=None):

@@ -64,7 +64,7 @@ class ProductionOrder(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
 
     # relations
     production_order_lineitems = db.relationship(
-        "ProductionOrderLineitem", backref="production_order", lazy="dynamic"
+        "ProductionOrderLineitem", backref="production_order"
     )
 
     # dynamic

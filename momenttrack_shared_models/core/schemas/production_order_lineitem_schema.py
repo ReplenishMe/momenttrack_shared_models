@@ -17,3 +17,19 @@ class ProductionOrderLineitemSchema(BaseSQLAlchemyAutoSchema):
         load_instance = True
         include_relationships = True
         include_fk = True
+
+
+class ProductionOrderLineitemOrderReportSchema(BaseSQLAlchemyAutoSchema):
+    class Meta:
+        include_relationships = True
+        fields = (
+            'license_plate', 'production_order'
+        )
+
+    license_plate = ma.Nested('LicensePlateOrderReportSchema')
+    production_order = ma.Nested(
+        'ProductionOrderSchema', only=(
+            'product.description',
+            'product.part_number',
+        )
+    )
