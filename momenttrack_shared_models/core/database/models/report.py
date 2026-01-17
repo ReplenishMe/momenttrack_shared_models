@@ -84,7 +84,7 @@ class LineItemTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
             resp.totals_object = existing_row
         else:
             new_stat = cls(
-                name=location.name, 
+                name=location.name,
                 production_order_id=po_id,
                 location_id=location.id,
                 organization_id=location.organization_id,

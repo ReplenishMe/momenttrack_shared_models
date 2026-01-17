@@ -535,6 +535,7 @@ class LicensePlateReportSchema(BaseSQLAlchemyAutoSchema):
             'category', 'production_order_id', 'when_last_movement',
             'last_interaction', 'organization_id'
         )
+        exclude = ('location',)
         include_fk = True
         include_relationships = True
 
