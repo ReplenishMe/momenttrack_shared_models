@@ -58,7 +58,7 @@ class LicensePlateMove(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin)
     )
 
     def update_associated_report(self, last_interaction_time, session):
-        from core.database.models import EverythingReport
+        from momenttrack_shared_models.core.database.models import EverythingReport
         lp_id = self.license_plate.lp_id
         user: User = session.scalar(
             select(User).where(User.id == self.user_id)
