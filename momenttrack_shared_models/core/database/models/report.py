@@ -30,6 +30,37 @@ class EverythingReport(
     production_order_id = db.Column(db.String(63))
     organization_id = db.Column(db.Integer(), index=True)
 
+    @classmethod
+    def get_by_license_plate_id(cls, lp_id, session=None):
+        stmt = select(cls).where(cls.lp_id == lp_id)
+        if session:
+            return session.scalars(stmt).first()
+        return db.session.scalars(stmt).first()
+
+    @classmethod
+    def upsert(cls, payload, session=None):
+        lp_id = payload['lp_id']
+        po_id = payload['po_id']
+        report_raw = payload['report_raw']
+        existing_row = cls.get_by_license_plate_id(
+            lp_id, session=session
+        )
+        resp = EverythingReportResp()
+        if existing_row:
+            for k, v in report_raw.items():
+                setattr(existing_row, k, v)
+        else:
+            new_stat = cls(**report_raw)
+            resp.is_new = True
+            resp.new_object = new_stat
+        return resp
+
+
+@dataclass
+class EverythingReportResp:
+    new_object: EverythingReport = None
+    is_new: bool = False
+
 
 class LineItemTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     organization_id = db.Column(db.Integer, index=True)
