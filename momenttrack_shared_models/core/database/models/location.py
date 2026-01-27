@@ -64,6 +64,7 @@ class Location(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
             nested=True
         )
     )
+    average_duration = db.Column(db.Float)
 
     license_plates = db.relationship(
         "LicensePlate",

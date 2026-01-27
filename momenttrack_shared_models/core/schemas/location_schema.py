@@ -1,9 +1,11 @@
 from datetime import datetime
 import marshmallow.fields as ma
+from sqlalchemy import select, desc
 
 from momenttrack_shared_models.core.schemas import (
     LicensePlateSchema,
-    ProductSchema
+    ProductSchema, LineGraphDataSchema,
+    LocationPartNoTotalsSchema
 )
 from momenttrack_shared_models.core.schemas._base import (
     BaseSQLAlchemyAutoSchema,
@@ -11,12 +13,13 @@ from momenttrack_shared_models.core.schemas._base import (
 )
 from momenttrack_shared_models.core.database.models import (
     LicensePlateMove,
-    Location, LicensePlate
+    Location, LicensePlate,
+    LineGraphData, LocationPartNoTotals
 )
 from momenttrack_shared_models.core.extensions import db
 from marshmallow import (
     pre_dump, pre_load,
-    post_dump
+    post_dump, fields
 )
 
 
@@ -160,3 +163,60 @@ class LocationReportSchema(BaseSQLAlchemyAutoSchema):
         load_instance = True
         include_relationships = True
         include_fk = True
+
+
+class LocReportSchema(BaseSQLAlchemyAutoSchema):
+    class Meta:
+        # exclude = ("updated_at",)
+        model = Location
+        sqla_session = db.session
+        load_instance = True
+        include_relationships = True
+        include_fk = True
+        fields = (
+            'beacon_id', 'active', 'lp_qty', 'created_at',
+            'line_graph_data', 'name', 'location_partno_totals',
+            'oldest_lp', 'average_duration', 'id'
+        )
+
+    line_graph_data = fields.Method(serialize='get_line_graph_data')
+    location_partno_totals = fields.Method(
+        serialize='get_loc_part_no_data'
+    )
+    oldest_lp = fields.Method(serialize='get_oldest_lp')
+
+    def get_oldest_lp(self, obj):
+        stmt = select(LicensePlateMove).where(
+            LicensePlateMove.dest_location_id == obj.id
+        ).order_by(desc(LicensePlateMove.created_at)).limit(1)
+        lp_move = db.session.scalar(stmt)
+        if lp_move:
+            lp = db.session.scalar(
+                select(LicensePlate).where(
+                    LicensePlate.id == lp_move.license_plate_id
+                )
+            )
+            return LicensePlateSchema(
+                only=('lp_id', 'product')
+            ).dump(lp)
+        return {}
+
+    def get_line_graph_data(self, obj):
+        stmt = select(LineGraphData).where(
+            LineGraphData.location_id == obj.id
+        )
+        res = db.session.scalars(stmt)
+        return LineGraphDataSchema(
+            many=True,
+            exclude=('organization_id',)
+        ).dump(res)
+
+    def get_loc_part_no_data(self, obj):
+        stmt = select(LocationPartNoTotals).where(
+            LocationPartNoTotals.location_id == obj.id
+        )
+        res = db.session.scalars(stmt)
+        return LocationPartNoTotalsSchema(
+            many=True,
+            exclude=('organization_id',)
+        ).dump(res)

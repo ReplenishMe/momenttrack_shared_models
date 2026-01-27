@@ -4,7 +4,8 @@ from momenttrack_shared_models.core.schemas._base import (
     BaseMASchema, BaseSQLAlchemyAutoSchema
 )
 from momenttrack_shared_models.core.database.models import (
-    EverythingReport, LineItemTotals
+    EverythingReport, LineItemTotals, LineGraphData,
+    LocationPartNoTotals
 )
 from momenttrack_shared_models.core.extensions import db
 from marshmallow import validate
@@ -24,3 +25,13 @@ class RequestReportSchema(BaseMASchema):
 class LineItemTotalSchema(BaseSQLAlchemyAutoSchema):
     class Meta:
         model = LineItemTotals
+
+
+class LineGraphDataSchema(BaseSQLAlchemyAutoSchema):
+    class Meta:
+        model = LineGraphData
+
+
+class LocationPartNoTotalsSchema(BaseSQLAlchemyAutoSchema):
+    class Meta:
+        model = LocationPartNoTotals

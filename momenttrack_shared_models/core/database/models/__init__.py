@@ -50,4 +50,7 @@ from .container import (
     Container,
     ContainerMove
 )
-from .report import EverythingReport, LineItemTotals
+from .report import (
+    EverythingReport, LineItemTotals,
+    LineGraphData, LocationPartNoTotals
+)

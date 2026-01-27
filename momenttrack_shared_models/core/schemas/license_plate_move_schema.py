@@ -1,6 +1,8 @@
+from marshmallow import fields
 import marshmallow.fields as ma
 
-from momenttrack_shared_models.core.schemas._base import BaseSQLAlchemyAutoSchema
+from momenttrack_shared_models.core.schemas._base import \
+    BaseSQLAlchemyAutoSchema
 from momenttrack_shared_models.core.database.models import LicensePlateMove
 from momenttrack_shared_models.core.extensions import db
 
@@ -17,3 +19,6 @@ class LicensePlateMoveSchema(BaseSQLAlchemyAutoSchema):
         load_instance = True
         include_relationships = True
         include_fk = True
+
+    license_plate = fields.Nested('LicensePlateSchema')
+    user = fields.Nested('UserSchema')

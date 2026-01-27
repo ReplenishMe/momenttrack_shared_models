@@ -57,7 +57,7 @@ class LicensePlateMove(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin)
         "LicensePlate", backref="license_plate_move", lazy="joined"
     )
 
-    def update_associated_report(self, last_interaction_time, session):
+    def update_associated_report(self, last_interaction_time, lp_report, session):
         from momenttrack_shared_models.core.database.models import EverythingReport
         lp_id = self.license_plate.lp_id
         user: User = session.scalar(
@@ -67,6 +67,7 @@ class LicensePlateMove(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin)
             "who_moved_last": user.person_id,
             "when_last_movement": self.created_at,
             "last_interaction": last_interaction_time,
+            **lp_report
         }
 
         report = session.scalar(
