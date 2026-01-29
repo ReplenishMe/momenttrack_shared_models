@@ -227,3 +227,23 @@ class LocationPartNoTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMi
             resp.is_new = True
             resp.new_object = new_stat
         return resp
+
+    @classmethod
+    def up_sert(cls, payload, session=None):
+        loc_id = payload['loc_id']
+        prod = payload['product']
+        existing_row = cls.get_by_location_id_and_part_number(
+            loc_id, prod.part_number, session=session
+        )
+        resp = ReportResp()
+        if not existing_row:
+            new_stat = cls(
+                location_id=loc_id,
+                description=prod.description,
+                part_number=prod.part_number,
+                quantity=1,
+                organization_id=prod.organization_id,
+            )
+            resp.is_new = True
+            resp.new_object = new_stat
+        return resp
