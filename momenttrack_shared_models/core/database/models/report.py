@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 
+from ..models import LicensePlate
 from ..model_mixins import BelongsToOrgMixin, IdMixin, TimestampMixin
 from ...extensions import db
 
@@ -134,7 +135,7 @@ class LineItemTotalsResp:
 
 @dataclass
 class ReportResp:
-    new_object: EverythingReport = None
+    new_object = None
     is_new: bool = False
 
 
@@ -246,4 +247,34 @@ class LocationPartNoTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMi
             )
             resp.is_new = True
             resp.new_object = new_stat
+        return resp
+
+    @classmethod
+    def get_src_loc_total(cls, payload, session=None):
+        loc_id = payload['loc_id']
+        prod = payload['product']
+        res = cls.get_by_location_id_and_part_number(
+            loc_id, prod.part_number, session=session
+        )
+        resp = ReportResp()
+        if not res:
+            qty = session.scalar(
+                select(func.count()).select_from(
+                    select(LicensePlate.id).where(
+                        LicensePlate.location_id == loc_id,
+                        LicensePlate.product_id == prod.id
+                    )
+                )
+            )
+            res = cls(
+                location_id=loc_id,
+                description=prod.description,
+                part_number=prod.part_number,
+                quantity=qty,
+                organization_id=prod.organization_id,
+            )
+            session.add(res)
+            session.flush()
+            resp.is_new = True
+        resp.new_object = res
         return resp
