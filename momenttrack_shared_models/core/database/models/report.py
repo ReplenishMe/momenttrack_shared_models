@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, and_, func
 
 from ..models import LicensePlate
@@ -40,21 +41,13 @@ class EverythingReport(
 
     @classmethod
     def upsert(cls, payload, session=None):
-        lp_id = payload['lp_id']
-        po_id = payload['po_id']
         report_raw = payload['report_raw']
-        existing_row = cls.get_by_license_plate_id(
-            lp_id, session=session
+        stmt = insert(cls).values(**report_raw)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=['lp_id'],
+            set_=report_raw
         )
-        resp = EverythingReportResp()
-        if existing_row:
-            for k, v in report_raw.items():
-                setattr(existing_row, k, v)
-        else:
-            new_stat = cls(**report_raw)
-            resp.is_new = True
-            resp.new_object = new_stat
-        return resp
+        session.execute(stmt)
 
 
 @dataclass
@@ -64,6 +57,7 @@ class EverythingReportResp:
 
 
 class LineItemTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
+    __table_args__ = (db.UniqueConstraint("location_id", "production_order_id"),)
     organization_id = db.Column(db.Integer, index=True)
     name = db.Column(db.String)
     production_order_id = db.Column(db.Integer, index=True)
@@ -107,24 +101,21 @@ class LineItemTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     def upsert(cls, payload, session=None):
         po_id = payload['production_order_id']
         location = payload['location']
-        existing_row = cls.get_by_location_and_order(
-            location.id, po_id, session=session
+        stmt = insert(cls).values(
+            production_order_id=po_id,
+            location_id=location.id,
+            organization_id=location.organization_id,
+            name=location.name,
+            total_items=1  # Default value if row is created
         )
-        resp = LineItemTotalsResp()
-        if existing_row:
-            existing_row.total_items += 1
-            resp.totals_object = existing_row
-        else:
-            new_stat = cls(
-                name=location.name,
-                production_order_id=po_id,
-                location_id=location.id,
-                organization_id=location.organization_id,
-                total_items=1
-            )
-            resp.is_new = True
-            resp.totals_object = new_stat
-        return resp
+        stmt = stmt.on_conflict_do_update(
+            index_elements=['location_id', 'production_order_id'],
+            set_={
+                'total_items': cls.total_items + 1,
+                'name': stmt.excluded.name
+            }
+        )
+        session.execute(stmt)
 
 
 @dataclass
@@ -140,22 +131,24 @@ class ReportResp:
 
 
 class LineGraphData(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
+    __table_args__ = (db.UniqueConstraint("location_id", "product_id", "date_key"),)
     organization_id = db.Column(db.Integer, index=True)
     date = db.Column(db.DateTime)
     date_key = db.Column(db.String, index=True)
     quantity = db.Column(db.Integer)
     location_id = db.Column(db.Integer, index=True)
     part_number = db.Column(db.String, index=True)
+    product_id = db.Column(db.Integer, index=True)
 
     @classmethod
-    def get_by_date_key_location_id_and_part(
-        cls, loc_id, date_key, part_number, session=None
+    def get_by_date_key_location_id_and_prod_id(
+        cls, loc_id, date_key, prod_id, session=None
     ):
         stmt = select(cls).where(
             and_(
                 cls.location_id == loc_id,
                 cls.date_key == date_key,
-                cls.part_number == part_number
+                cls.product_id == prod_id
             )
         )
         if session:
@@ -167,40 +160,40 @@ class LineGraphData(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         loc_id = payload['loc_id']
         date_key = payload['date_key']
         lp_move = payload['lp_move']
-        part_number = payload['part_number']
-        existing_row: LineGraphData = cls.get_by_date_key_location_id_and_part(
-            loc_id, date_key, part_number, session=session
+        prod = payload['product']
+        stmt = insert(cls).values(
+            date=lp_move.created_at,
+            date_key=date_key,
+            quantity=1,
+            organization_id=lp_move.organization_id,
+            part_number=prod.part_number,
+            product_id=prod.id,
+            location_id=loc_id
         )
-        resp = ReportResp()
-        if existing_row:
-            existing_row.quantity += 1
-        else:
-            new_stat = cls(
-                date=lp_move.created_at,
-                date_key=date_key,
-                quantity=1,
-                organization_id=lp_move.organization_id,
-                part_number=part_number,
-                location_id=loc_id
-            )
-            resp.is_new = True
-            resp.new_object = new_stat
-        return resp
+        stmt = stmt.on_conflict_do_update(
+            index_elements=['location_id', 'product_id', 'date_key'],
+            set_={
+                'quantity': cls.quantity + 1
+            }
+        )
+        session.execute(stmt)
 
 
 class LocationPartNoTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
+    __table_args__ = (db.UniqueConstraint("location_id", "product_id"),)
     organization_id = db.Column(db.Integer, index=True)
     location_id = db.Column(db.Integer, index=True)
     part_number = db.Column(db.String, index=True)
     quantity = db.Column(db.Integer)
+    product_id = db.Column(db.Integer, index=True)
     description = db.Column(db.Text(), default=None)
 
     @classmethod
-    def get_by_location_id_and_part_number(cls, loc_id, part_no, session=None):
+    def get_by_location_id_and_prod_id(cls, loc_id, prod_id, session=None):
         stmt = select(cls).where(
             and_(
                 cls.location_id == loc_id,
-                cls.part_number == part_no
+                cls.product_id == prod_id
             )
         )
         if session:
@@ -211,70 +204,60 @@ class LocationPartNoTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMi
     def upsert(cls, payload, session=None):
         loc_id = payload['loc_id']
         prod = payload['product']
-        existing_row = cls.get_by_location_id_and_part_number(
-            loc_id, prod.part_number, session=session
+        stmt = insert(cls).values(
+            location_id=loc_id,
+            description=prod.description,
+            part_number=prod.part_number,
+            product_id=prod.id,
+            quantity=1,
+            organization_id=prod.organization_id,
         )
-        resp = ReportResp()
-        if existing_row:
-            existing_row.quantity += 1
-        else:
-            new_stat = cls(
-                location_id=loc_id,
-                description=prod.description,
-                part_number=prod.part_number,
-                quantity=1,
-                organization_id=prod.organization_id,
-            )
-            resp.is_new = True
-            resp.new_object = new_stat
-        return resp
+        stmt = stmt.on_conflict_do_update(
+            index_elements=['location_id', 'product_id'],
+            set_={
+                'quantity': cls.quantity + 1,
+                'description': stmt.excluded.description
+            }
+        )
+        session.execute(stmt)
 
     @classmethod
     def up_sert(cls, payload, session=None):
         loc_id = payload['loc_id']
         prod = payload['product']
-        existing_row = cls.get_by_location_id_and_part_number(
-            loc_id, prod.part_number, session=session
+        stmt = insert(cls).values(
+            location_id=loc_id,
+            description=prod.description,
+            part_number=prod.part_number,
+            product_id=prod.id,
+            quantity=1,
+            organization_id=prod.organization_id,
+        ).on_conflict_do_nothing(
+            index_elements=['location_id', 'product_id']
         )
-        resp = ReportResp()
-        if not existing_row:
-            new_stat = cls(
-                location_id=loc_id,
-                description=prod.description,
-                part_number=prod.part_number,
-                quantity=1,
-                organization_id=prod.organization_id,
-            )
-            resp.is_new = True
-            resp.new_object = new_stat
-        return resp
+        session.execute(stmt)
 
     @classmethod
-    def get_src_loc_total(cls, payload, session=None):
+    def upsert_src_loc_total(cls, payload, session=None):
         loc_id = payload['loc_id']
         prod = payload['product']
-        res = cls.get_by_location_id_and_part_number(
-            loc_id, prod.part_number, session=session
+        count_subquery = select(func.count()).select_from(LicensePlate).where(
+            LicensePlate.location_id == loc_id,
+            LicensePlate.product_id == prod.id
+        ).scalar_subquery()
+        stmt = insert(cls).values(
+            location_id=loc_id,
+            description=prod.description,
+            part_number=prod.part_number,
+            product_id=prod.id,
+            organization_id=prod.organization_id,
+            quantity=count_subquery
         )
-        resp = ReportResp()
-        if not res:
-            qty = session.scalar(
-                select(func.count()).select_from(
-                    select(LicensePlate.id).where(
-                        LicensePlate.location_id == loc_id,
-                        LicensePlate.product_id == prod.id
-                    )
-                )
-            )
-            res = cls(
-                location_id=loc_id,
-                description=prod.description,
-                part_number=prod.part_number,
-                quantity=qty,
-                organization_id=prod.organization_id,
-            )
-            session.add(res)
-            session.flush()
-            resp.is_new = True
-        resp.new_object = res
-        return resp
+        stmt = stmt.on_conflict_do_update(
+            index_elements=['location_id', 'product_id'],
+            set_={
+                'quantity': cls.quantity - 1,
+                'description': stmt.excluded.description 
+            }
+        )
+        session.execute(stmt)
