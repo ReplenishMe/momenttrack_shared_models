@@ -30,6 +30,20 @@ class Organization(db.BaseModel, IdMixin, TimestampMixin):
             nested=True
         )
     )
+    erp_json_template = db.Column(
+        mutable_json_type(
+            dbtype=JSONB,
+            nested=True
+        )
+    )
+    erp_config_json = db.Column(
+        mutable_json_type(
+            dbtype=JSONB,
+            nested=True
+        )
+    )
+    timezone = db.Column(db.String)
+    end_of_work_day_hour = db.Column(db.Integer)
 
     users = db.relationship("User", backref="organization")
     roles = db.relationship("Role", lazy="dynamic")

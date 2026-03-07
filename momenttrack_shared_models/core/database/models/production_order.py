@@ -58,6 +58,8 @@ class ProductionOrder(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
     docid = db.Column(
         db.String(63), nullable=True, unique=True, default=lambda: generate_uuid()
     )
+    projected_daily_amount = db.Column(db.Integer)
+    projected_monthly_amount = db.Column(db.Integer)
 
     external_docid = db.Column(db.String(63), nullable=True, default=None)
     redirect_url = db.Column(db.String(127), default=None)

@@ -52,5 +52,5 @@ from .container import (
 )
 from .report import (
     EverythingReport, LineItemTotals,
-    LineGraphData, LocationPartNoTotals
+    LineGraphData, LocationPartNoTotals, ProductionOrderProjectionReport
 )

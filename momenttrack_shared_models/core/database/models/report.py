@@ -261,3 +261,32 @@ class LocationPartNoTotals(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMi
             }
         )
         session.execute(stmt)
+
+
+class ProductionOrderProjectionReport(
+    db.BaseModel, IdMixin,
+    TimestampMixin, BelongsToOrgMixin
+):
+    __table_args__ = (db.UniqueConstraint("date_key", "production_order_id"),)
+    organization_id = db.Column(db.Integer, index=True)
+    date_key = db.Column(db.String, index=True)
+    cumulative_total = db.Column(db.Integer)
+    projected_total = db.Column(db.Integer)
+    production_order_id = db.Column(db.Integer, index=True)
+
+    @staticmethod
+    def count_weekdays(year, month, holidays=set(), start_day=0):
+        import calendar
+        from datetime import date
+        # calendar.monthrange returns a tuple: (first_weekday, total_days_in_month)
+        _, total_days = calendar.monthrange(year, month)
+
+        weekday_count = 0
+
+        for day in range(start_day, total_days):
+            # .weekday() returns 0 for Monday, 6 for Sunday
+            weekday = date(year, month, day+1).weekday()
+            if weekday < 5 and weekday not in holidays:
+                weekday_count += 1
+
+        return weekday_count
