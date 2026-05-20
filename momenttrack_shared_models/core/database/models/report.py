@@ -42,6 +42,7 @@ class EverythingReport(
     @classmethod
     def upsert(cls, payload, session=None):
         report_raw = payload['report_raw']
+        report_raw.pop('id', None)  # remove lp id to avoid conflict
         stmt = insert(cls).values(**report_raw)
         stmt = stmt.on_conflict_do_update(
             index_elements=['lp_id'],
