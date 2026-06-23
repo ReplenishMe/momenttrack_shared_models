@@ -46,6 +46,7 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         nullable=True
     )
     external_serial_number = db.Column(db.String(127))
+    external_do_number = db.Column(db.String(127), server_default='AUTO')
     # @TODO Make it non-nullable
     is_consumer_facing = db.Column(db.Boolean(), nullable=True, default=False)
     redirect_url = db.Column(db.String(127), default=None)

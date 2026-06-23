@@ -14,6 +14,7 @@ class EverythingReport(
 ):
     quantity = db.Column(db.Integer)
     external_serial_number = db.Column(db.String(127))
+    external_do_number = db.Column(db.String(127), server_default='AUTO')
     lp_id = db.Column(db.String(63), nullable=False, unique=True, index=True)
     status = db.Column(db.String)
     product_id = db.Column(db.Integer)
