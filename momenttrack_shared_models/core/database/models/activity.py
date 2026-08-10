@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy.dialects.postgresql import JSONB
+
 from ..model_mixins import BelongsToOrgMixin, IdMixin
 from ...extensions import db
 from ...utils import SerializableEnum
@@ -19,6 +21,9 @@ class ActivityTypeEnum(SerializableEnum):
     CONTAINER_CREATED = "CONTAINER_CREATED"
 
 
+JSONField = db.JSON().with_variant(JSONB, "postgresql")
+
+
 class Activity(db.BaseModel, IdMixin, BelongsToOrgMixin):
     """Activity details"""
 
@@ -35,6 +40,7 @@ class Activity(db.BaseModel, IdMixin, BelongsToOrgMixin):
     activity_type = db.Column(
         db.Enum(ActivityTypeEnum, native_enum=True, length=31), nullable=True
     )
+    meta_data = db.Column(JSONField, default={})
     # activity_type_id = db.Column(db.Integer(), db.ForeignKey("activity_type.id"))
     ip_address = db.Column(db.String(45))
     created_at = db.Column(db.DateTime(), nullable=False, default=datetime.utcnow)

@@ -45,7 +45,7 @@ class LicensePlate(db.BaseModel, IdMixin, TimestampMixin, BelongsToOrgMixin):
         db.ForeignKey("license_plate.id"),
         nullable=True
     )
-    external_serial_number = db.Column(db.String(127))
+    external_serial_number = db.Column(db.String(127), index=True)
     external_do_number = db.Column(db.String(127), server_default='AUTO')
     # @TODO Make it non-nullable
     is_consumer_facing = db.Column(db.Boolean(), nullable=True, default=False)
